@@ -1,7 +1,7 @@
 # TCC Contract SDK
 
 Documentation and browser tools for writing, deploying and testing smart contracts
-on the TCC chain (chain id 91338).
+on the TCC chain (live chain, id 91338).
 
 Published at **https://tccnetwork.github.io/tcc-sdk/**
 
@@ -16,8 +16,9 @@ Everything here is static and self-contained: no CDN, no build step, no tracking
 
 ## Which chain the tools talk to
 
-The tools default to the public mainnet RPC (`rpc2` / `rpc3`), so a deploy from this
-page spends real TCC — a transaction costs about 0.001 TCC.
+The tools start on the test chain. Switching them to the live chain (91338, `rpc2` /
+`rpc3`) means a deploy spends TCC that people actually hold — about 0.001 TCC per
+transaction — and what you deploy stays on chain for good.
 
 The free public test chain (id 91339) is at `https://rpc-test.tcc-coin.com/rpc`, with
 a faucet at `https://faucet-test.tcc-coin.com/rpc` handing out 5 TCC per wallet per

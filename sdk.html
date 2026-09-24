@@ -106,9 +106,9 @@
 <div class="hero"><div class="wrap">
   <h1>Build on <span class="grad">TCC</span>.<br>Rust in, WebAssembly on-chain.</h1>
   <p>Write a contract in plain Rust with <code>tcc-sdk</code>, test it on your machine
-     under the chain's own rules, and deploy a 10–20&nbsp;KB WebAssembly module to TCC mainnet.</p>
+     under the chain's own rules, and deploy a 10–20&nbsp;KB WebAssembly module to the live TCC chain.</p>
   <div class="chips">
-    <span class="chip">mainnet <b>91338</b></span>
+    <span class="chip">live chain <b>91338</b></span>
     <span class="chip">test chain <b>91339</b></span>
     <span class="chip"><b>Rust → WASM</b></span>
     <span class="chip">Dilithium3 · post-quantum</span>
@@ -147,11 +147,12 @@
       <code>curl</code>, from Node and from a page in the browser.</p>
     </div>
     <div class="card">
-      <h4>Mainnet — 91338</h4>
-      <p>Real TCC, real NFTs, real marketplaces. The chain accepts a deploy from anyone today, but
+      <h4>Live chain — 91338</h4>
+      <p>The chain the TCC wallet, the NFT market and the file market already run on: the coins here
+      are the ones people hold, and what you deploy stays. It accepts a deploy from anyone today, but
       the limits above are <b>not live on it yet</b> — they arrive with a scheduled upgrade
       (<span class="kbd">PLAN-untrusted-contracts.md</span>). Until then a contract here can be
-      written carelessly and take a node with it, so treat mainnet as the place you ship to <i>after</i>
+      written carelessly and take a node with it, so treat the live chain as the place you ship to <i>after</i>
       your contract works on 91339.</p>
       <p style="margin-top:8px"><code>https://rpc2.tcc-coin.com/rpc</code></p>
     </div>
@@ -166,11 +167,11 @@
   <div class="callout warn" style="margin-top:18px">
     <b>What differs between them is only what a contract may DO, never how you write it.</b> Same
     methods, same host functions, same SDK, same deploy flow — so a contract that behaves on 91339
-    behaves on 91338. What 91339 will refuse and today's mainnet will not: an oversize value, a
+    behaves on 91338. What 91339 will refuse and the live chain today will not: an oversize value, a
     program that is not valid WebAssembly, an instance that asks for gigabytes of memory.
   </div>
 
-  <h3>Shipping it to mainnet</h3>
+  <h3>Shipping it to the live chain</h3>
   <p class="exmeta">There is no export, no migration and no porting step. You deploy the same
      bytes a second time, on the other chain.</p>
 
@@ -181,13 +182,13 @@
     artifact, do not rebuild it.
   </div></div>
   <div class="step"><div class="num">2</div><div>
-    <b>Fund a mainnet wallet.</b> A deploy is not one transaction: <code>BufferInit</code>, then
+    <b>Fund a wallet on the live chain.</b> A deploy is not one transaction: <code>BufferInit</code>, then
     one <code>BufferWrite</code> per 2,048 bytes, then <code>ContractDeploy</code>, then your
     <code>initialize</code>. A 20&nbsp;KB program is about 13 transactions — on the order of
     0.013&nbsp;TCC at the current flat fee.
   </div></div>
   <div class="step"><div class="num">3</div><div>
-    <b>Point at mainnet and sign again.</b> In the <a href="tools/tools.html">Contract Tools</a>
+    <b>Point at the live chain and sign again.</b> In the <a href="tools/tools.html">Contract Tools</a>
     that is the network selector in the header. By hand, it is the RPC URL. Either way the
     transactions must be <i>rebuilt and re-signed</i>: <code>chain_id</code> is inside the signed
     message, so nothing you signed for 91339 can be replayed on 91338. That is the protection
@@ -195,7 +196,7 @@
   </div></div>
   <div class="step"><div class="num">4</div><div>
     <b>Deploy and initialise as two transactions, for now.</b> <code>ContractDeployInit</code>,
-    which does both atomically, runs on 91339 today but mainnet <b>rejects it until the scheduled
+    which does both atomically, runs on 91339 today but the live chain <b>rejects it until the scheduled
     upgrade height</b>. Before that, deploy first and call <code>initialize</code> second — and
     whoever sends the second transaction owns the contract, so send it yourself, immediately.
   </div></div>

@@ -92,7 +92,7 @@
     <a href="https://testscan.tcc-coin.com/" target="_blank" rel="noopener">Explorer</a>
     <select id="network" class="themebtn" aria-label="Network" title="Which chain this page talks to">
       <option value="test">Test chain 91339 — free</option>
-      <option value="main">Mainnet 91338 — real TCC</option>
+      <option value="main">Live chain 91338 — costs TCC</option>
     </select>
     <button class="themebtn" id="theme">◐</button>
   </nav>
@@ -133,7 +133,7 @@ import { mnemonicToEntropy, validateMnemonic } from '../public/vendor/bip39.js';
 import { wordlist } from '../public/vendor/bip39-wordlist-en.js';
 
 // Two chains, same software. The TEST chain is the default on purpose: a stranger who
-// lands here and presses Deploy should spend nothing. Mainnet is one deliberate click
+// lands here and presses Deploy should spend nothing. The live chain is one deliberate click
 // away and says so in red while it is selected.
 const NETWORKS = {
   test: {
@@ -142,7 +142,7 @@ const NETWORKS = {
     faucet: 'https://faucet-test.tcc-coin.com/rpc'
   },
   main: {
-    id: 91338, label: 'TCC mainnet',
+    id: 91338, label: 'the live TCC chain',
     rpcs: ['https://rpc2.tcc-coin.com/rpc', 'https://rpc3.tcc-coin.com/rpc'],
     faucet: null
   }
@@ -593,7 +593,7 @@ $('#network').value = NETKEY;
 if (NETKEY === 'main') {
   const b = $('#netbanner');
   b.className = 'msg err show';
-  b.textContent = 'Mainnet: every deploy and every call spends real TCC (about 0.001 TCC per transaction) and the contract stays on chain for good. Switch to the test chain above to try things for free.';
+  b.textContent = 'Live chain: every deploy and every call spends TCC that people actually hold (about 0.001 TCC per transaction), and what you deploy stays on chain for good. Switch to the test chain above to try things for free.';
 } else if (NET.faucet) {
   const b = $('#netbanner');
   b.className = 'msg show';
