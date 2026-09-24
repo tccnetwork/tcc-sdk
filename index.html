@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
 <title>TCC Smart Contract SDK</title>
 <style>
   :root{
@@ -26,7 +27,7 @@
   header.top{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
   .top .wrap{display:flex;align-items:center;gap:14px;height:58px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
-  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+  .logo{width:26px;height:30px;object-fit:contain;display:block}
   .top nav{margin-left:auto;display:flex;gap:18px;align-items:center}
   .top nav a{color:var(--muted);font-size:14px}
   .top nav a:hover{color:var(--fg);text-decoration:none}
@@ -90,7 +91,7 @@
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="brand"><span class="logo">T</span> TCC&nbsp;·&nbsp;Contract SDK</div>
+  <div class="brand"><img class="logo" src="logo.svg" alt="" width="26" height="30"> TCC&nbsp;·&nbsp;Contract SDK</div>
   <nav>
     <a href="#start">Quickstart</a>
     <a href="#networks">Networks</a>

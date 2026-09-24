@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="../logo.svg">
 <title>TCC Contract Tools</title>
 <style>
   :root{--bg:#0b0e14;--panel:#111725;--panel2:#0e1420;--border:#1e2940;--fg:#e6edf7;--muted:#8b98b0;--accent:#4f9dff;--accent2:#7c5cff;--ok:#3fd08a;--err:#ff6b6b;--code:#0a0f18;--chip:#182236}
@@ -15,7 +16,7 @@
   header.top{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
   .top .wrap{display:flex;align-items:center;gap:14px;height:58px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:800}
+  .logo{width:26px;height:30px;object-fit:contain;display:block}
   .top nav{margin-left:auto;display:flex;gap:12px;align-items:center}
   .top nav a{color:var(--muted);font-size:14px}.top nav a:hover{color:var(--fg);text-decoration:none}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--fg)}
@@ -86,7 +87,7 @@
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="brand"><span class="logo">T</span> TCC · Contract Tools</div>
+  <div class="brand"><img class="logo" src="../logo.svg" alt="" width="26" height="30"> TCC · Contract Tools</div>
   <nav>
     <a href="../sdk.html">SDK docs</a>
     <a href="https://testscan.tcc-coin.com/" target="_blank" rel="noopener">Explorer</a>
