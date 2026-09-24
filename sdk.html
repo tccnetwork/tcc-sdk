@@ -169,6 +169,43 @@
     behaves on 91338. What 91339 will refuse and today's mainnet will not: an oversize value, a
     program that is not valid WebAssembly, an instance that asks for gigabytes of memory.
   </div>
+
+  <h3>Shipping it to mainnet</h3>
+  <p class="exmeta">There is no export, no migration and no porting step. You deploy the same
+     bytes a second time, on the other chain.</p>
+
+  <div class="step"><div class="num">1</div><div>
+    <b>Keep the exact <code>.wasm</code> you tested.</b> A contract's address is
+    <code>blake3(code)</code>, so the same bytes land on the same address on both chains — and a
+    rebuild that differs by one byte is a different contract at a different address. Ship the
+    artifact, do not rebuild it.
+  </div></div>
+  <div class="step"><div class="num">2</div><div>
+    <b>Fund a mainnet wallet.</b> A deploy is not one transaction: <code>BufferInit</code>, then
+    one <code>BufferWrite</code> per 2,048 bytes, then <code>ContractDeploy</code>, then your
+    <code>initialize</code>. A 20&nbsp;KB program is about 13 transactions — on the order of
+    0.013&nbsp;TCC at the current flat fee.
+  </div></div>
+  <div class="step"><div class="num">3</div><div>
+    <b>Point at mainnet and sign again.</b> In the <a href="tools/tools.html">Contract Tools</a>
+    that is the network selector in the header. By hand, it is the RPC URL. Either way the
+    transactions must be <i>rebuilt and re-signed</i>: <code>chain_id</code> is inside the signed
+    message, so nothing you signed for 91339 can be replayed on 91338. That is the protection
+    working, not an obstacle.
+  </div></div>
+  <div class="step"><div class="num">4</div><div>
+    <b>Deploy and initialise as two transactions, for now.</b> <code>ContractDeployInit</code>,
+    which does both atomically, runs on 91339 today but mainnet <b>rejects it until the scheduled
+    upgrade height</b>. Before that, deploy first and call <code>initialize</code> second — and
+    whoever sends the second transaction owns the contract, so send it yourself, immediately.
+  </div></div>
+
+  <div class="callout" style="margin-top:18px">
+    <b>Want a second instance of the same template?</b> You cannot deploy identical bytes twice —
+    identical bytes are the same address, already taken. Change the module so it differs: the
+    tools page does it for you by appending a random salt to a custom section, which leaves the
+    code's behaviour untouched and gives it a new address.
+  </div>
 </div></section>
 
 <section id="model"><div class="wrap">
