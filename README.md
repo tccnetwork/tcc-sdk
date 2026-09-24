@@ -19,8 +19,8 @@ Everything here is static and self-contained: no CDN, no build step, no tracking
 The tools default to the public mainnet RPC (`rpc2` / `rpc3`), so a deploy from this
 page spends real TCC — a transaction costs about 0.001 TCC.
 
-A free public test chain (id 91339) also exists at `http://46.250.231.130:42107`
-with a faucet at `http://46.250.231.130:42108/rpc`. It is reachable from curl and
-from Node today, but **not from this page**: a browser refuses a plain-http call from
-an https page. It becomes usable from the browser once the test chain has a name and
-a certificate.
+The free public test chain (id 91339) is at `https://rpc-test.tcc-coin.com/rpc`, with
+a faucet at `https://faucet-test.tcc-coin.com/rpc` handing out 5 TCC per wallet per
+hour — about five thousand transactions. Both answer over https with CORS open, so the
+tools page talks to them directly, and it starts there by default: nobody spends real
+TCC by accident on their first try.

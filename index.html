@@ -141,10 +141,10 @@
       the rules that bound what a contract may do: 64 MiB of memory per call, storage priced by the
       byte with values capped at 65,532, a program that does not compile refused at deploy, and
       deploy-plus-initialise in one transaction.</p>
-      <p style="margin-top:8px">RPC <code>http://46.250.231.130:42107</code> · faucet
-      <code>http://46.250.231.130:42108/rpc</code> — 500 TCC per wallet per hour. These are plain
-      http, so they work from <code>curl</code> and the CLI today; a browser page served over https
-      cannot call them until they have a name and a certificate.</p>
+      <p style="margin-top:8px">RPC <code>https://rpc-test.tcc-coin.com/rpc</code> · faucet
+      <code>https://faucet-test.tcc-coin.com/rpc</code> — 5 TCC per wallet per hour, which is
+      about five thousand transactions. Both answer over https with CORS open, so they work from
+      <code>curl</code>, from Node and from a page in the browser.</p>
     </div>
     <div class="card">
       <h4>Mainnet — 91338</h4>
@@ -157,7 +157,7 @@
     </div>
   </div>
   <h3>Test coins</h3>
-  <p class="exmeta">The faucet hands out 500 TCC an hour per wallet, and the wallet must SIGN for
+  <p class="exmeta">The faucet hands out 5 TCC an hour per wallet, and the wallet must SIGN for
      them — so a claim proves who is asking, and an address alone is not enough. Sign the blake3 of
      <code>"TCC-FAUCET-CLAIM-v1" ‖ chain_id(u64 LE) ‖ recipient(32) ‖ timestamp(i64 LE)</code> with
      your Dilithium3 key (the timestamp must be within a few minutes of now), then call
