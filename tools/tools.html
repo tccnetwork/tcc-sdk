@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCC Contract Tools</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#111725;--panel2:#0e1420;--border:#1e2940;--fg:#e6edf7;--muted:#8b98b0;--accent:#4f9dff;--accent2:#7c5cff;--ok:#3fd08a;--err:#ff6b6b;--code:#0a0f18;--chip:#182236}
+  :root[data-theme="light"]{--bg:#f6f8fc;--panel:#fff;--panel2:#f0f4fa;--border:#dde5f0;--fg:#111827;--muted:#5a6a83;--accent:#2563eb;--accent2:#7c5cff;--ok:#0f9d58;--err:#d33;--code:#0d1420;--chip:#eaf1fb}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  code,pre,.mono{font-family:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px}
+  header.top{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .top .wrap{display:flex;align-items:center;gap:14px;height:58px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:800}
+  .top nav{margin-left:auto;display:flex;gap:12px;align-items:center}
+  .top nav a{color:var(--muted);font-size:14px}.top nav a:hover{color:var(--fg);text-decoration:none}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--fg)}
+  .btn.primary{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;border:none}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.sm{padding:6px 10px;font-size:13px}
+
+  .hero{padding:44px 0 24px;border-bottom:1px solid var(--border)}
+  .hero h1{font-size:32px;margin:0 0 10px;letter-spacing:-.4px}
+  .hero p{color:var(--muted);max-width:640px;margin:0}
+  .wallet{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .waddr{font-size:13px;color:var(--muted)}.waddr b{color:var(--ok)}
+
+  .layout{display:grid;grid-template-columns:260px 1fr;gap:22px;padding:26px 0}
+  @media(max-width:820px){.layout{grid-template-columns:1fr}}
+  .toolnav{display:flex;flex-direction:column;gap:8px}
+  .toolcard{text-align:left;cursor:pointer;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px 14px;display:flex;gap:12px;align-items:flex-start;color:var(--fg)}
+  .toolcard:hover{border-color:#2c3d5e}
+  .toolcard.active{border-color:var(--accent);background:color-mix(in oklab,var(--accent) 8%,var(--panel))}
+  .ico{font-size:20px;flex:0 0 auto}
+  .toolcard h4{margin:0 0 2px;font-size:14px}.toolcard p{margin:0;font-size:12.5px;color:var(--muted)}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px}
+  .panel h2{margin:0 0 4px;font-size:22px}.panel .sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
+  .field .hint{color:var(--muted);font-weight:400;font-size:12px}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:9px;color:var(--fg);padding:10px 12px;font-size:14px;font-family:inherit}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  .opts .opt{display:flex;gap:8px;margin-bottom:8px}.opts .opt input{flex:1}
+  .rm{flex:0 0 auto;width:38px;background:var(--panel2);border:1px solid var(--border);border-radius:9px;color:var(--muted);cursor:pointer}
+
+  .preview{margin-top:18px;background:var(--code);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .preview .bar{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid #1b2740;background:#0c1320;font-size:12px;color:#7f8db0}
+  .copy{margin-left:auto;cursor:pointer;font-size:12px;color:#8b98b0;background:transparent;border:1px solid #24314e;border-radius:6px;padding:3px 9px}
+  pre{margin:0;padding:14px;overflow-x:auto;font-size:12px;line-height:1.6;color:#cfe0f5;white-space:pre-wrap;word-break:break-all}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;font-size:12.5px;padding:12px 14px}
+  .kv .k{color:#7f8db0}.kv .v{color:#cfe0f5;word-break:break-all}
+  .actions{display:flex;gap:10px;margin-top:18px;align-items:center;flex-wrap:wrap}
+  .msg{font-size:13px;padding:10px 12px;border-radius:9px;margin-top:14px;display:none}
+  .msg.show{display:block}
+  .msg.ok{background:color-mix(in oklab,var(--ok) 14%,transparent);border:1px solid var(--ok);color:var(--fg)}
+  .msg.err{background:color-mix(in oklab,var(--err) 12%,transparent);border:1px solid var(--err);color:var(--fg)}
+  .callout{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted);margin-top:16px}
+  .themebtn{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--fg);border-radius:8px;padding:6px 10px;font-size:13px}
+  dialog{border:1px solid var(--border);border-radius:14px;background:var(--panel);color:var(--fg);max-width:420px;width:92%;padding:22px}
+  dialog::backdrop{background:rgba(4,8,16,.6)}
+  .help-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--chip);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;margin-left:7px;vertical-align:middle;user-select:none;line-height:1}
+  .help-btn:hover,.help-btn.open{color:#fff;background:var(--accent);border-color:var(--accent)}
+  .help-box{display:none;margin:7px 0 2px;padding:10px 12px;background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:9px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .help-box.show{display:block;animation:helpin .12s ease}
+  @keyframes helpin{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  .help-box b{color:var(--fg);font-weight:600}
+  .help-box code{background:var(--chip);border:1px solid var(--border);padding:1px 5px;border-radius:5px;font-size:11.5px;color:var(--fg)}
+  .log{margin-top:14px;background:var(--code);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:12px/1.7 "SF Mono",ui-monospace,Menlo,Consolas,monospace;color:#cfe0f5;max-height:260px;overflow:auto;display:none;white-space:pre-wrap;word-break:break-all}
+  .log.show{display:block}
+  .log .ok{color:#3fd08a}.log .err{color:#ff8a8a}.log .dim{color:#7f8db0}
+  .result{margin-top:14px}
+  .result table{width:100%;border-collapse:collapse;font-size:13px}
+  .result td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:top;word-break:break-all}
+  .result td:first-child{color:var(--muted);white-space:nowrap;width:1%}
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--chip);border:1px solid var(--border);color:var(--muted);margin-left:6px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><span class="logo">T</span> TCC · Contract Tools</div>
+  <nav>
+    <a href="../sdk.html">SDK docs</a>
+    <a href="https://testscan.tcc-coin.com/" target="_blank" rel="noopener">Explorer</a>
+    <button class="themebtn" id="theme">◐</button>
+  </nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <h1>Ship a smart contract without writing code</h1>
+  <p>Fill in a few fields and put a real contract on TCC mainnet (chain <span id="chainId">91338</span>).
+     No Rust, no CLI — audited template programs, your wallet signs in this page.
+     Every action is checked against the chain before you sign.</p>
+  <div class="wallet">
+    <button class="btn primary" id="connect">Connect wallet</button>
+    <span class="waddr" id="waddr">not connected</span>
+  </div>
+</div></div>
+
+<div class="wrap"><div class="layout">
+  <div class="toolnav" id="toolnav"></div>
+  <div class="panel" id="panel"></div>
+</div></div>
+
+<dialog id="unlock">
+  <h3 style="margin:0 0 4px">Connect wallet</h3>
+  <p style="color:var(--muted);font-size:13px;margin:0 0 14px">Enter the <b>24-word recovery phrase</b> of your TCC wallet (or the raw seed it was created from). It derives the same address as the TCC wallet, is used only in this tab to sign, and is never sent anywhere.</p>
+  <input id="seed" type="password" placeholder="24-word recovery phrase" autocomplete="off" spellcheck="false">
+  <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+    <button class="btn" id="unlockCancel">Cancel</button>
+    <button class="btn primary" id="unlockGo">Connect</button>
+  </div>
+</dialog>
+
+<script type="module">
+import * as C from './tools-core.js';
+import * as N from '../tcc-client.js';
+import { mnemonicToEntropy, validateMnemonic } from '../public/vendor/bip39.js';
+import { wordlist } from '../public/vendor/bip39-wordlist-en.js';
+
+const RPCS = ['https://rpc2.tcc-coin.com/rpc', 'https://rpc3.tcc-coin.com/rpc'];
+const PKG = '../public/pkg/';
+N.configure({ rpcs: RPCS, pkgDir: PKG });
+const WASM_DIR = '../public/wasm/';
+const EXPLORER = 'https://testscan.tcc-coin.com/';
+const RAW_SEED_MIN = 100;               // the TCC wallet's own minimum for a non-BIP39 seed
+
+// ── small utils ────────────────────────────────────────────────────────────────
+const $ = (s, e) => (e || document).querySelector(s);
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const short = a => { a = C.norm0x(a); return a.slice(0, 10) + '…' + a.slice(-6); };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Talking to the chain lives in ../tcc-client.js — shared with the other pages, so a
+// change like "take the buffer address from the node" happens once for all of them.
+const { rpc, tipHeight, codeExists, view } = N;
+
+// ── wallet ─────────────────────────────────────────────────────────────────────
+let W = null;   // the connected wallet: { address, pubHex, sk }
+const blake3 = b => N.blake3(b);
+async function connect(input) {
+  W = await N.walletFrom(input, { validateMnemonic, mnemonicToEntropy, wordlist });
+  let bal = '';
+  try { bal = ' · ' + C.weiToTcc(await N.balanceOf(W.address)) + ' TCC'; } catch (e) { }
+  $('#waddr').innerHTML = `connected <b>${short(W.address)}</b>${esc(bal)} — check this is your wallet's address`;
+}
+
+// The page's own shorthand over the shared client: every call here already knows
+// which wallet is connected.
+const submit = (method, params) => N.buildSignSubmit(W, method, params);
+const waitNonce = (target, what, seconds) => N.waitNonce(W, target, what, seconds);
+const contractCall = call => N.contractCall(W, call);
+const deployCode = (code, log) => N.publishProgram(W, code, log);
+const preflight = (contract, method, args, why) => N.preflight(W, { contract, method, args }, why);
+const send = (log, call, opts = {}) => N.sendCall(W, call, { ...opts, log });
+const loadSigner = () => N.loadSigner();
+
+const wasmCache = {};
+async function templateWasm(name) {
+  if (!wasmCache[name]) {
+    const r = await fetch(WASM_DIR + name + '.wasm');
+    if (!r.ok) throw new Error(`cannot load the ${name} template (HTTP ${r.status})`);
+    wasmCache[name] = new Uint8Array(await r.arrayBuffer());
+  }
+  return wasmCache[name];
+}
+
+// ── the market: find which contract holds a listing ─────────────────────────────
+async function findListing(nft, tid) {
+  for (const m of C.MARKETS) {
+    const r = await view(m, 'get_listing', C.encNftTid(nft, tid));
+    const L = r.code === 0 ? C.decListing(r.payload) : null;
+    if (L) return { market: m, ...L };
+  }
+  return null;
+}
+async function needListing(nft, tid, kind) {
+  const L = await findListing(nft, tid);
+  if (!L) throw new Error('this NFT is not listed on any TCC market');
+  if (kind && L.kind !== kind) throw new Error(`this NFT is listed as a ${L.kind}, not a ${kind}`);
+  return L;
+}
+const marketWhy = code => C.MARKET_STATUS[code] || `status ${code}`;
+
+// ── tools ──────────────────────────────────────────────────────────────────────
+// Each tool is a list of actions. An action has fields, a `plan` (sync, for the
+// preview: what will be called, with which bytes) and a `run` (async, does it).
+const F = {
+  nft: { k: 'nft', label: 'NFT collection address', ph: '0x… (64 hex)', help: 'The collection contract that holds the NFT — shown in the NFT app next to the collection.' },
+  tid: { k: 'tid', label: 'Token ID', ph: '0x… (64 hex)', help: 'The NFT\'s id inside the collection, exactly as the NFT app shows it (0x + 64 hex).' },
+};
+const nftTid = p => [C.addr32(p.nft, 'collection'), C.tokenId32(p.tid)];
+const acl = p => [C.norm0x(p.nft)];
+
+let tokenMintId = null;   // one random mint id per form, so the preview does not change under the user
+
+const TOOLS = [
+  {
+    id: 'token', icon: '🪙', title: 'Token', tag: 'fungible token',
+    desc: 'Create a fungible token on the shared Token program, then mint its supply.',
+    howto: 'The Token program is shared: every token is one entry in it, named by a random <b>mint id</b>. The first token ever created also publishes the program itself (a one-time upload, ~63 transactions, signed once). You become the token\'s mint authority. <b>Keep the mint id</b> — it is how you mint and how wallets find the token.',
+    actions: [
+      { id: 'create', label: 'Create token',
+        fields: [
+          { k: 'name', label: 'Token name', ph: 'My Coin', help: 'Up to 32 bytes.' },
+          { k: 'symbol', label: 'Symbol', ph: 'MYC', help: 'Up to 12 bytes.' },
+          { k: 'decimals', label: 'Decimals', val: '9', help: 'Places after the point, 0–18. Amounts are stored as whole × 10^decimals.' },
+          { k: 'supply', label: 'Max supply (whole tokens)', val: '0', help: '0 = no cap.' },
+        ],
+        plan(p) {
+          tokenMintId = tokenMintId || crypto.getRandomValues(new Uint8Array(32));
+          const authority = W ? C.hexToBytes(W.address) : new Uint8Array(32);
+          return { contract: 'Token program (blake3 of token.wasm)', method: 'initialize_mint',
+            args: C.encInitMint({ mintId: tokenMintId, authority, decimals: p.decimals, name: p.name, symbol: p.symbol, capWhole: p.supply || 0 }),
+            extra: { 'mint id': C.toHex(tokenMintId), authority: W ? W.address : '(connect wallet)' } };
+        },
+        async run(p, log) {
+          const plan = this.plan(p);
+          const program = await deployCode(await templateWasm('token'), log);
+          await send(log, { contract: program, method: 'initialize_mint', args: plan.args, gas: C.GAS_INIT });
+          const r = await view(program, 'get_mint', tokenMintId);
+          if (r.code !== 0) throw new Error('confirmed, but get_mint does not find the token — check the explorer');
+          const info = JSON.parse(new TextDecoder().decode(r.payload));
+          const out = { program, 'mint id': C.toHex(tokenMintId), name: info.name, symbol: info.symbol, decimals: info.decimals };
+          tokenMintId = null;
+          return out;
+        } },
+      { id: 'mint', label: 'Mint tokens',
+        fields: [
+          { k: 'mint', label: 'Mint id', ph: '0x… (from “Create token”)' },
+          { k: 'to', label: 'Recipient', ph: 'your address if empty' },
+          { k: 'amount', label: 'Amount (whole tokens)', ph: '1000', help: 'Scaled by the token\'s decimals, which are read from the chain.' },
+        ],
+        plan(p) {
+          const to = p.to.trim() || (W ? W.address : '');
+          return { contract: 'Token program', method: 'mint_to',
+            args: C.encMintTo({ mintId: C.addr32(p.mint, 'mint id'), to: C.addr32(to, 'recipient'), amount: 0 }),
+            extra: { amount: `${p.amount || 0} × 10^decimals (read on submit)` } };
+        },
+        async run(p, log) {
+          const program = C.toHex(blake3(await templateWasm('token')));
+          const mintId = C.addr32(p.mint, 'mint id');
+          const r = await view(program, 'get_mint', mintId);
+          if (r.code !== 0) throw new Error('no token with this mint id on the Token program');
+          const info = JSON.parse(new TextDecoder().decode(r.payload));
+          const whole = String(p.amount || '').trim();
+          if (!/^\d+$/.test(whole) || whole === '0') throw new Error('amount: a whole number above 0');
+          const to = C.addr32(p.to.trim() || W.address, 'recipient');
+          const amount = BigInt(whole) * 10n ** BigInt(info.decimals);
+          await send(log, { contract: program, method: 'mint_to', args: C.encMintTo({ mintId, to, amount }), gas: C.GAS_INIT });
+          const b = await view(program, 'balance_of', C.cat(mintId, to));
+          return { token: `${info.name} (${info.symbol})`, recipient: C.toHex(to), 'balance now': `${C.readUle(b.payload, 0, 16) / 10n ** BigInt(info.decimals)} ${info.symbol}` };
+        } },
+    ],
+  },
+  {
+    id: 'nft', icon: '🖼️', title: 'NFT Collection', tag: 'ERC-721',
+    desc: 'Launch your own NFT collection contract. Mint into it from the NFT app.',
+    howto: 'Each collection is its <b>own contract</b>: the ERC-721 template is uploaded with a random salt so it gets a fresh address (~65 transactions, signed once), then initialised with your name and symbol. You are its mint authority. To sell from it, run <b>Approve market</b> once.',
+    actions: [
+      { id: 'create', label: 'Create collection',
+        fields: [
+          { k: 'name', label: 'Collection name', ph: 'My Collection', help: 'Up to 32 bytes.' },
+          { k: 'symbol', label: 'Symbol', ph: 'MYNFT', help: 'Up to 12 bytes.' },
+        ],
+        plan(p) {
+          return { contract: 'new contract (address known after upload)', method: 'initialize_collection',
+            args: C.encInitCollection({ name: p.name, symbol: p.symbol, authority: W ? C.hexToBytes(W.address) : new Uint8Array(32) }),
+            extra: { 'mint authority': W ? W.address : '(connect wallet)' } };
+        },
+        async run(p, log) {
+          const args = this.plan(p).args;
+          const addr = await deployCode(C.saltedWasm(await templateWasm('erc721')), log);
+          await send(log, { contract: addr, method: 'initialize_collection', args, gas: C.GAS_INIT });
+          const st = await rpc('tcc_queryContractState', [addr, C.toHex(C.utf8('state')).slice(2)]);
+          const s = JSON.parse(new TextDecoder().decode(C.hexToBytes(st.value)));
+          return { collection: addr, name: s.name, symbol: s.symbol };
+        } },
+      { id: 'approve', label: 'Approve market',
+        fields: [F.nft],
+        plan(p) {
+          return { contract: p.nft || '(collection)', method: 'set_approval_for_all',
+            args: C.encApproveAll(C.hexToBytes(C.OFFERS_MARKET), true), extra: { operator: C.OFFERS_MARKET + ' (NFT market)' } };
+        },
+        async run(p, log) {
+          const nft = C.norm0x(C.toHex(C.addr32(p.nft, 'collection')));
+          await send(log, { contract: nft, method: 'set_approval_for_all', args: this.plan(p).args });
+          const r = await view(nft, 'is_approved_for_all', C.cat(C.hexToBytes(W.address), C.hexToBytes(C.OFFERS_MARKET)));
+          return { collection: nft, 'market approved': r.payload[0] === 1 ? 'yes' : 'NO — check the explorer' };
+        } },
+    ],
+  },
+  {
+    id: 'poll', icon: '🗳️', title: 'Poll / Vote', tag: 'governance',
+    desc: 'Deploy an on-chain poll: one vote per address, public tallies, closes at a block height.',
+    howto: 'Each poll is its own small contract (~9 transactions to create, signed once). The chain stores <b>only the tallies</b> — option 1, option 2, … — not the question or the option names, so share those with your voters along with the poll address. This browser remembers them for polls you create.',
+    actions: [
+      { id: 'create', label: 'Create poll',
+        fields: [
+          { k: 'title', label: 'Question', ph: 'Which feature next?', help: 'Kept in this browser and shown with the results; not stored on chain.' },
+          { k: 'options', label: 'Options', type: 'options', help: '2 to 32 choices.' },
+          { k: 'days', label: 'Voting window (days)', val: '7', help: 'Closes at the current height + days × 8640 blocks.' },
+        ],
+        plan(p) {
+          const n = (p.options || []).filter(x => x.trim()).length;
+          const days = Number(p.days);
+          if (!(days > 0 && days <= 365)) throw new Error('voting window: 0 to 365 days');
+          return { contract: 'new contract (address known after upload)', method: 'create',
+            args: C.encPollCreate(n, 0), extra: { options: n, 'closes after': `${Math.round(days * C.BLK_DAY)} blocks (height set on submit)` } };
+        },
+        async run(p, log) {
+          const opts = (p.options || []).map(x => x.trim()).filter(Boolean);
+          const close = (await tipHeight()) + Math.round(Number(p.days) * C.BLK_DAY);
+          const addr = await deployCode(C.saltedWasm(await templateWasm('poll')), log);
+          await send(log, { contract: addr, method: 'create', args: C.encPollCreate(opts.length, close) });
+          try { localStorage.setItem('tcc-poll:' + addr, JSON.stringify({ title: p.title, options: opts, close })); } catch (e) { }
+          return { poll: addr, question: p.title || '(none)', options: opts.map((o, i) => `${i + 1}. ${o}`).join('  '), 'closes at height': close };
+        } },
+      { id: 'vote', label: 'Vote',
+        fields: [{ k: 'poll', label: 'Poll address', ph: '0x…' }, { k: 'option', label: 'Option number', ph: '1', help: '1 for the first option, 2 for the second, …' }],
+        plan(p) {
+          const i = Number(p.option);
+          if (!Number.isInteger(i) || i < 1 || i > 32) throw new Error('option: a number from 1');
+          return { contract: p.poll || '(poll)', method: 'vote', args: C.encPollVote(i - 1), extra: {} };
+        },
+        async run(p, log) {
+          const poll = C.toHex(C.addr32(p.poll, 'poll'));
+          await send(log, { contract: poll, method: 'vote', args: this.plan(p).args },
+            { why: c => ({ 1: 'no such option, or not a poll', 7: 'voting has closed', 8: 'this address already voted' }[c] || `status ${c}`) });
+          return pollResults(poll);
+        } },
+      { id: 'results', label: 'Results', view: true,
+        fields: [{ k: 'poll', label: 'Poll address', ph: '0x…' }],
+        plan(p) { return { contract: p.poll || '(poll)', method: 'results', args: new Uint8Array(0), extra: { note: 'read-only — no wallet, no fee' } }; },
+        async run(p) { return pollResults(C.toHex(C.addr32(p.poll, 'poll'))); } },
+    ],
+  },
+  {
+    id: 'market', icon: '🏪', title: 'NFT Market', tag: 'sale · auction · rent · offers',
+    desc: 'Trade any TCC NFT on the live market, paid in native TCC: fixed-price sale, auction, rental and offers.',
+    howto: 'Prices are in <b>TCC</b>. New listings go to the current market; an action on an existing listing is sent to whichever market holds it (three generations are live). Before your first listing from a collection, run <b>Approve market</b> on it. Every action is tried against the chain first; a refusal is explained before anything is signed.',
+    actions: [
+      { id: 'lookup', label: 'Look up a listing', view: true, fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'each market in turn', method: 'get_listing', args: C.encNftTid(...nftTid(p)), extra: { note: 'read-only — no wallet, no fee' } }; },
+        async run(p) {
+          const L = await findListing(...nftTid(p));
+          if (!L) return { listing: 'none on any TCC market' };
+          const tip = await tipHeight(), o = { market: L.market, kind: L.kind, 'seller / owner': L.party };
+          if (L.kind === 'sale') o.price = C.weiToTcc(L.amountA) + ' TCC';
+          if (L.kind === 'auction') Object.assign(o, { reserve: C.weiToTcc(L.amountA) + ' TCC', 'high bid': L.amountB ? `${C.weiToTcc(L.amountB)} TCC by ${L.counter}` : 'none', closes: L.time > tip ? `in ${L.time - BigInt(tip)} blocks` : 'closed — ready to settle' });
+          if (L.kind === 'rental') Object.assign(o, { 'per day': C.weiToTcc(L.amountA * BigInt(C.BLK_DAY)) + ' TCC', status: L.time > tip ? `rented until height ${L.time}` : 'free to rent' });
+          return o;
+        } },
+      { id: 'approve', label: 'Approve market (once per collection)', fields: [F.nft],
+        plan(p) { return { contract: p.nft || '(collection)', method: 'set_approval_for_all', args: C.encApproveAll(C.hexToBytes(C.OFFERS_MARKET), true), extra: { operator: C.OFFERS_MARKET } }; },
+        async run(p, log) { return TOOLS[1].actions[1].run.call(TOOLS[1].actions[1], p, log); } },
+      { id: 'sell', label: 'List for sale', fields: [F.nft, F.tid, { k: 'price', label: 'Price (TCC)', ph: '25' }],
+        plan(p) { return { contract: C.OFFERS_MARKET, method: 'list_sale', args: C.encListSale(...nftTid(p), C.tccToWei(p.price, 'price')), accounts: acl(p), extra: { price: p.price + ' TCC' } }; },
+        async run(p, log) { const c = this.plan(p); await send(log, c, { why: marketWhy }); return { listed: `${p.price} TCC on ${short(C.OFFERS_MARKET)}` }; } },
+      { id: 'buy', label: 'Buy', fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'the market holding the listing', method: 'buy', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: { pays: 'the listed price, read on submit' } }; },
+        async run(p, log) {
+          const L = await needListing(...nftTid(p), 'sale');
+          if (C.norm0x(L.party) === W.address) throw new Error('this is your own listing');
+          if (!confirm(`Buy for exactly ${C.weiToTcc(L.amountA)} TCC?`)) throw new Error('cancelled');
+          await send(log, { ...this.plan(p), contract: L.market, value: L.amountA });
+          const after = await findListing(...nftTid(p));
+          return { bought: after ? 'NOT completed — the listing is still there (was it bought or changed first?)' : `for ${C.weiToTcc(L.amountA)} TCC` };
+        } },
+      { id: 'cancel', label: 'Cancel sale', fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'the market holding the listing', method: 'cancel_sale', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: {} }; },
+        async run(p, log) { const L = await needListing(...nftTid(p), 'sale'); await send(log, { ...this.plan(p), contract: L.market }, { why: marketWhy }); return { cancelled: 'yes' }; } },
+      { id: 'auction', label: 'Start auction', fields: [F.nft, F.tid, { k: 'reserve', label: 'Reserve price (TCC)', ph: '10', help: 'Bids must be above this.' }, { k: 'hours', label: 'Duration (hours)', val: '24' }],
+        plan(p) {
+          const h = Number(p.hours); if (!(h > 0)) throw new Error('duration: more than 0 hours');
+          const blocks = Math.round(h * 360);
+          return { contract: C.OFFERS_MARKET, method: 'start_auction', args: C.encStartAuction(...nftTid(p), C.tccToWei(p.reserve, 'reserve'), blocks), accounts: acl(p), extra: { reserve: p.reserve + ' TCC', 'duration blocks': blocks } };
+        },
+        async run(p, log) { await send(log, this.plan(p), { why: marketWhy }); return { auction: 'open' }; } },
+      { id: 'bid', label: 'Bid', fields: [F.nft, F.tid, { k: 'amount', label: 'Your bid (TCC)', ph: '12', help: 'Must be above the reserve and the current high bid. Held by the market; refunded automatically if you are outbid.' }],
+        plan(p) { return { contract: 'the market holding the auction', method: 'bid', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: { sends: p.amount + ' TCC' } }; },
+        async run(p, log) {
+          const L = await needListing(...nftTid(p), 'auction');
+          const amt = C.tccToWei(p.amount, 'bid'), floor = L.amountB > 0n ? L.amountB : L.amountA;
+          if (amt <= floor) throw new Error(`the bid must be above ${C.weiToTcc(floor)} TCC`);
+          if (BigInt(await tipHeight()) >= L.time) throw new Error('this auction has closed');
+          await send(log, { ...this.plan(p), contract: L.market, value: amt });
+          const A = await findListing(...nftTid(p));
+          return { 'high bid now': A ? `${C.weiToTcc(A.amountB)} TCC by ${A.counter}` : '?' , 'you lead': A && C.norm0x(A.counter) === W.address ? 'yes' : 'NO' };
+        } },
+      { id: 'settle', label: 'Settle auction', fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'the market holding the auction', method: 'settle_auction', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: {} }; },
+        async run(p, log) { const L = await needListing(...nftTid(p), 'auction'); await send(log, { ...this.plan(p), contract: L.market }, { why: marketWhy }); return { settled: 'yes' }; } },
+      { id: 'cancelauc', label: 'Cancel auction (no bids)', fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'the market holding the auction', method: 'cancel_auction', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: {} }; },
+        async run(p, log) { const L = await needListing(...nftTid(p), 'auction'); await send(log, { ...this.plan(p), contract: L.market }, { why: marketWhy }); return { cancelled: 'yes' }; } },
+      { id: 'reclaimbid', label: 'Reclaim my bid (unsettleable auction)', fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'the market holding the auction', method: 'reclaim_bid', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: {} }; },
+        async run(p, log) { const L = await needListing(...nftTid(p), 'auction'); await send(log, { ...this.plan(p), contract: L.market }, { why: marketWhy }); return { reclaimed: 'yes' }; } },
+      { id: 'offer', label: 'Make an offer', fields: [F.nft, F.tid, { k: 'amount', label: 'Offer (TCC)', ph: '8', help: 'Held by the market until the seller accepts or you withdraw.' }, { k: 'hours', label: 'Valid for (hours)', val: '0', help: '0 = until you withdraw it.' }],
+        plan(p) {
+          const h = Number(p.hours || 0); if (!(h >= 0)) throw new Error('valid for: 0 or more hours');
+          return { contract: C.OFFERS_MARKET, method: 'make_offer', args: C.encMakeOffer(...nftTid(p), Math.round(h * 360)), accounts: acl(p), extra: { sends: p.amount + ' TCC' } };
+        },
+        async run(p, log) {
+          const L = await needListing(...nftTid(p), 'sale');
+          if (C.norm0x(L.market) !== C.OFFERS_MARKET) throw new Error('offers exist only on the current market, and this listing is on an older one');
+          if (C.norm0x(L.party) === W.address) throw new Error('this is your own listing');
+          const amt = C.tccToWei(p.amount, 'offer'); if (amt === 0n) throw new Error('offer: more than 0');
+          await send(log, { ...this.plan(p), value: amt });
+          return { offered: `${p.amount} TCC` };
+        } },
+      { id: 'canceloffer', label: 'Withdraw my offer', fields: [F.nft, F.tid],
+        plan(p) { return { contract: C.OFFERS_MARKET, method: 'cancel_offer', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: {} }; },
+        async run(p, log) { await send(log, this.plan(p), { why: marketWhy }); return { withdrawn: 'yes' }; } },
+      { id: 'accept', label: 'Accept an offer', fields: [F.nft, F.tid, { k: 'buyer', label: 'Buyer address', ph: '0x…' }],
+        plan(p) { return { contract: C.OFFERS_MARKET, method: 'accept_offer', args: C.encAcceptOffer(...nftTid(p), C.addr32(p.buyer, 'buyer')), accounts: acl(p), extra: {} }; },
+        async run(p, log) {
+          const [nft, tid] = nftTid(p), buyer = C.addr32(p.buyer, 'buyer');
+          const o = await view(C.OFFERS_MARKET, 'offer_of', C.cat(nft, tid, buyer));
+          const amt = o.code === 0 && o.payload.length >= 16 ? C.readUle(o.payload, 0, 16) : 0n;
+          if (!amt) throw new Error('that buyer has no offer on this NFT');
+          if (!confirm(`Accept ${C.weiToTcc(amt)} TCC (before the market fee)?`)) throw new Error('cancelled');
+          await send(log, this.plan(p), { why: marketWhy });
+          return { sold: `${C.weiToTcc(amt)} TCC` };
+        } },
+      { id: 'rentout', label: 'List for rent', fields: [F.nft, F.tid, { k: 'perday', label: 'Price per day (TCC)', ph: '1', help: 'Charged per block (a day is 8,640 blocks). The NFT is held by the market while listed.' }],
+        plan(p) {
+          const ppb = C.tccToWei(p.perday, 'price per day') / BigInt(C.BLK_DAY);
+          if (ppb === 0n) throw new Error('price per day is too small');
+          return { contract: C.OFFERS_MARKET, method: 'list_rent', args: C.encListRent(...nftTid(p), ppb), accounts: acl(p), extra: { 'per block': C.weiToTcc(ppb) + ' TCC' } };
+        },
+        async run(p, log) { await send(log, this.plan(p), { why: marketWhy }); return { 'listed for rent': p.perday + ' TCC / day' }; } },
+      { id: 'rent', label: 'Rent', fields: [F.nft, F.tid, { k: 'days', label: 'Days', val: '1' }],
+        plan(p) {
+          const d = Number(p.days); if (!(d > 0)) throw new Error('days: more than 0');
+          return { contract: 'the market holding the rental', method: 'rent', args: C.encRent(...nftTid(p), Math.round(d * C.BLK_DAY)), accounts: acl(p), extra: { pays: 'price per block × blocks, read on submit' } };
+        },
+        async run(p, log) {
+          const L = await needListing(...nftTid(p), 'rental');
+          if (L.time > BigInt(await tipHeight())) throw new Error(`already rented until height ${L.time}`);
+          const blocks = BigInt(Math.round(Number(p.days) * C.BLK_DAY)), cost = L.amountA * blocks;
+          if (!confirm(`Rent for ${p.days} day(s) at exactly ${C.weiToTcc(cost)} TCC?`)) throw new Error('cancelled');
+          await send(log, { ...this.plan(p), contract: L.market, value: cost });
+          return { rented: `${blocks} blocks for ${C.weiToTcc(cost)} TCC` };
+        } },
+      { id: 'reclaim', label: 'Reclaim rented-out NFT', fields: [F.nft, F.tid],
+        plan(p) { return { contract: 'the market holding the rental', method: 'reclaim_rent', args: C.encNftTid(...nftTid(p)), accounts: acl(p), extra: {} }; },
+        async run(p, log) { const L = await needListing(...nftTid(p), 'rental'); await send(log, { ...this.plan(p), contract: L.market }, { why: marketWhy }); return { reclaimed: 'yes' }; } },
+    ],
+  },
+];
+
+async function pollResults(poll) {
+  const r = await view(poll, 'results', new Uint8Array(0));
+  if (r.code !== 0) throw new Error('not a poll, or it was never created');
+  const t = C.decPollResults(r.payload);
+  let meta = null; try { meta = JSON.parse(localStorage.getItem('tcc-poll:' + C.norm0x(poll)) || 'null'); } catch (e) { }
+  const out = { poll };
+  if (meta && meta.title) out.question = meta.title;
+  t.forEach((v, i) => { out[`${i + 1}. ${meta && meta.options[i] ? meta.options[i] : 'option ' + (i + 1)}`] = `${v} vote${v === 1n ? '' : 's'}`; });
+  return out;
+}
+
+// ── render ─────────────────────────────────────────────────────────────────────
+let tool = TOOLS[0], action = tool.actions[0];
+let touched = false;   // no red "name is empty" before the user has typed anything
+function renderNav() {
+  $('#toolnav').innerHTML = TOOLS.map(t => `
+    <button class="toolcard ${t === tool ? 'active' : ''}" data-id="${t.id}">
+      <span class="ico">${t.icon}</span><span><h4>${t.title}</h4><p>${t.tag}</p></span>
+    </button>`).join('');
+  document.querySelectorAll('.toolcard').forEach(c => c.onclick = () => { tool = TOOLS.find(t => t.id === c.dataset.id); action = tool.actions[0]; renderNav(); renderPanel(); });
+}
+const optRow = i => `<div class="opt"><input data-opt placeholder="Option ${i + 1}"><button class="rm" type="button">✕</button></div>`;
+function fieldHtml(f) {
+  const q = f.help ? ` <span class="help-btn" data-help="${f.k}">?</span>` : '';
+  const box = f.help ? `<div class="help-box" data-hbox="${f.k}">${f.help}</div>` : '';
+  if (f.type === 'options') return `<div class="field"><label>${f.label}${q}</label>${box}<div class="opts" id="opts">${optRow(0)}${optRow(1)}</div><button class="btn sm" id="addOpt" type="button">+ add option</button></div>`;
+  return `<div class="field"><label>${f.label}${q}</label>${box}<input data-k="${f.k}" placeholder="${esc(f.ph || '')}" value="${esc(f.val || '')}" spellcheck="false"></div>`;
+}
+function renderPanel() {
+  const t = tool, a = action;
+  const sel = t.actions.length > 1 ? `<div class="field"><label>Action</label><select id="actionSel">${t.actions.map(x => `<option value="${x.id}" ${x === a ? 'selected' : ''}>${x.label}</option>`).join('')}</select></div>` : '';
+  $('#panel').innerHTML = `
+    <h2>${t.icon} ${t.title}</h2><p class="sub">${t.desc}</p>
+    <div class="callout" style="margin-top:0;margin-bottom:18px">${t.howto}</div>
+    ${sel}${a.fields.map(fieldHtml).join('')}
+    <div class="preview"><div class="bar">${a.view ? 'Read-only call' : 'Transaction preview'} <button class="copy" id="copyArgs">copy args</button></div>
+      <div class="kv" id="kv"></div><pre id="argsHex"></pre></div>
+    <div class="actions"><button class="btn primary" id="go">${a.view ? '🔍' : '🚀'} ${a.label}</button>
+      <span style="color:var(--muted);font-size:13px">${a.view ? 'no wallet needed, no fee' : 'checked against the chain, then signed with your wallet'}</span></div>
+    <div class="msg" id="msg"></div><div class="log" id="log"></div><div class="result" id="result"></div>`;
+  if ($('#actionSel')) $('#actionSel').onchange = e => { action = t.actions.find(x => x.id === e.target.value); renderPanel(); };
+  const opts = $('#opts');
+  if (opts) $('#addOpt').onclick = () => { if (opts.children.length < 32) { opts.insertAdjacentHTML('beforeend', optRow(opts.children.length)); wire(); update(); } };
+  $('#panel').querySelectorAll('.help-btn').forEach(b => b.onclick = () => { const box = $(`[data-hbox="${b.dataset.help}"]`); if (box) b.classList.toggle('open', box.classList.toggle('show')); });
+  $('#go').onclick = go;
+  $('#copyArgs').onclick = () => navigator.clipboard.writeText($('#argsHex').textContent);
+  touched = false; wire(); update();
+}
+function wire() {
+  document.querySelectorAll('.rm').forEach(b => b.onclick = () => { if (document.querySelectorAll('.opt').length > 2) { b.parentElement.remove(); update(); } });
+  $('#panel').querySelectorAll('input').forEach(i => i.oninput = () => { touched = true; update(); });
+}
+function collect() {
+  const p = {};
+  for (const f of action.fields) {
+    if (f.type === 'options') p.options = [...document.querySelectorAll('[data-opt]')].map(i => i.value);
+    else { const el = $(`[data-k="${f.k}"]`); p[f.k] = el ? el.value : ''; }
+  }
+  return p;
+}
+function update() {
+  try {
+    const c = action.plan(collect());
+    let kv = `<div class="k">contract</div><div class="v">${esc(c.contract)}</div><div class="k">method</div><div class="v mono">${c.method}</div>`;
+    if (c.accounts && c.accounts.length) kv += `<div class="k">accounts</div><div class="v">${esc(c.accounts.join(', '))}</div>`;
+    for (const k in c.extra) kv += `<div class="k">${esc(k)}</div><div class="v">${esc(c.extra[k])}</div>`;
+    kv += `<div class="k">args</div><div class="v">${c.args.length} bytes ↓</div>`;
+    $('#kv').innerHTML = kv; $('#argsHex').textContent = C.toHex(c.args); setMsg('');
+  } catch (e) { $('#kv').innerHTML = ''; $('#argsHex').textContent = ''; setMsg(touched ? esc(e.message) : '', 'err'); }
+}
+function setMsg(html, cls) { const m = $('#msg'); if (!html) { m.className = 'msg'; m.innerHTML = ''; return; } m.className = 'msg show ' + (cls || ''); m.innerHTML = html; }
+function makeLog() {
+  const el = $('#log'); el.className = 'log show'; el.innerHTML = '';
+  return (text, cls) => { el.insertAdjacentHTML('beforeend', `<div class="${cls || ''}">${new Date().toLocaleTimeString()}  ${esc(text)}</div>`); el.scrollTop = el.scrollHeight; };
+}
+async function go() {
+  const btn = $('#go');
+  try {
+    const p = collect();
+    action.plan(p);                                   // validate before anything else
+    if (!action.view && !W) { openUnlock(); return; }
+    btn.disabled = true; setMsg(''); $('#result').innerHTML = '';
+    const log = action.view ? () => { } : makeLog();
+    const out = await action.run(p, log);
+    $('#result').innerHTML = '<table>' + Object.entries(out || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="mono">${esc(v)}</td></tr>`).join('') + '</table>';
+    if (!action.view) setMsg(`✅ Done. <a href="${EXPLORER}" target="_blank" rel="noopener">Open the explorer</a> for the transactions.`, 'ok');
+  } catch (e) { setMsg('❌ ' + esc(e.message), 'err'); }
+  finally { btn.disabled = false; }
+}
+
+// ── wallet dialog, theme, boot ─────────────────────────────────────────────────
+function openUnlock() { $('#unlock').showModal(); $('#seed').focus(); }
+$('#connect').onclick = openUnlock;
+$('#unlockCancel').onclick = () => { $('#seed').value = ''; $('#unlock').close(); };
+$('#unlockGo').onclick = async () => {
+  try { await connect($('#seed').value); $('#unlock').close(); update(); }
+  catch (e) { setMsg('Could not connect: ' + esc(e.message), 'err'); $('#unlock').close(); }
+  finally { $('#seed').value = ''; }
+};
+const root = document.documentElement;
+try { const s = localStorage.getItem('tcc-tools-theme'); if (s) root.setAttribute('data-theme', s); } catch (e) { }
+$('#theme').onclick = () => { const n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; root.setAttribute('data-theme', n); try { localStorage.setItem('tcc-tools-theme', n); } catch (e) { } };
+
+renderNav(); renderPanel();
+rpc('tcc_getChainTip').then(t => { if (t && t.chain_id && t.chain_id !== C.CHAIN_ID) setMsg(`⚠ This RPC serves chain ${t.chain_id}, but the page is built for ${C.CHAIN_ID}.`, 'err'); }).catch(() => { });
+</script>
+</body>
+</html>

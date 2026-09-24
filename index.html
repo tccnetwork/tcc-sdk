@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCC Smart Contract SDK</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#111725; --panel2:#0e1420; --border:#1e2940;
+    --fg:#e6edf7; --muted:#8b98b0; --accent:#4f9dff; --accent2:#7c5cff;
+    --ok:#3fd08a; --code:#0a0f18; --chip:#182236;
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f8fc; --panel:#ffffff; --panel2:#f0f4fa; --border:#dde5f0;
+    --fg:#111827; --muted:#5a6a83; --accent:#2563eb; --accent2:#7c5cff;
+    --ok:#0f9d58; --code:#0d1420; --chip:#eaf1fb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,pre{font-family:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+  header.top{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .top .wrap{display:flex;align-items:center;gap:14px;height:58px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px}
+  .top nav{margin-left:auto;display:flex;gap:18px;align-items:center}
+  .top nav a{color:var(--muted);font-size:14px}
+  .top nav a:hover{color:var(--fg);text-decoration:none}
+  .themebtn{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--fg);border-radius:8px;padding:6px 10px;font-size:13px}
+
+  .hero{padding:64px 0 32px;border-bottom:1px solid var(--border)}
+  .hero h1{font-size:40px;line-height:1.1;margin:0 0 14px;letter-spacing:-.5px}
+  .hero h1 .grad{background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{font-size:18px;color:var(--muted);max-width:640px;margin:0 0 22px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--chip);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--fg)}
+  .chip b{color:var(--accent)}
+  .cta{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;border:1px solid var(--border)}
+  .btn.primary{background:linear-gradient(120deg,var(--accent),var(--accent2));color:#fff;border:none}
+  .btn.ghost{background:var(--panel);color:var(--fg)}
+
+  section{padding:48px 0;border-bottom:1px solid var(--border)}
+  section h2{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+  section .lead{color:var(--muted);margin:0 0 26px;max-width:680px}
+  h3{font-size:17px;margin:26px 0 10px}
+
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:760px){.g3,.g2{grid-template-columns:1fr}.hero h1{font-size:32px}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px}
+  .card h4{margin:0 0 6px;font-size:15px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .step{display:flex;gap:14px;align-items:flex-start;margin:0 0 8px}
+  .num{flex:0 0 28px;height:28px;border-radius:8px;background:var(--chip);border:1px solid var(--border);display:grid;place-items:center;font-weight:700;color:var(--accent);font-size:14px}
+
+  /* code blocks */
+  .code{position:relative;background:var(--code);border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden}
+  .code .bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #1b2740;background:#0c1320}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .code .fname{margin-left:8px;font-size:12px;color:#7f8db0;font-family:ui-monospace,monospace}
+  .copy{margin-left:auto;cursor:pointer;font-size:12px;color:#8b98b0;background:transparent;border:1px solid #24314e;border-radius:6px;padding:4px 9px}
+  .copy:hover{color:#e6edf7;border-color:#3a4c73}
+  pre{margin:0;padding:16px;overflow-x:auto;font-size:12.5px;line-height:1.65;color:#cfe0f5;tab-size:4}
+  pre .k{color:#7c9dff}.pre .n{color:#9be6b4}
+  table.api{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px;display:block;overflow-x:auto}
+  table.api th,table.api td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap}
+  table.api th{color:var(--muted);font-weight:600}
+  table.api td code{color:var(--accent);font-size:12.5px}
+  table.api td.d{color:var(--muted);white-space:normal}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px}
+  .tab{cursor:pointer;padding:8px 14px;border-radius:9px 9px 0 0;border:1px solid var(--border);border-bottom:none;background:var(--panel2);color:var(--muted);font-size:13.5px;font-weight:600}
+  .tab.active{background:var(--code);color:var(--fg);border-color:#24314e}
+  .exmeta{color:var(--muted);font-size:13.5px;margin:4px 0 0}
+  footer{padding:34px 0;color:var(--muted);font-size:13px}
+  .callout{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:14px 16px;color:var(--fg);font-size:14px}
+  .kbd{background:var(--chip);border:1px solid var(--border);border-radius:6px;padding:1px 7px;font-size:12.5px;font-family:ui-monospace,monospace}
+  .callout.warn{border-left-color:#e5a100}
+  .callout + .callout{margin-top:12px}
+  ul.tight{margin:8px 0 0;padding-left:20px;color:var(--muted)} ul.tight li{margin:4px 0}
+  ul.tight b, ul.tight code{color:var(--fg)}
+  @media(max-width:760px){.top nav a.opt{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><span class="logo">T</span> TCC&nbsp;·&nbsp;Contract SDK</div>
+  <nav>
+    <a href="#start">Quickstart</a>
+    <a href="#networks">Networks</a>
+    <a class="opt" href="#model">Contract model</a>
+    <a href="#api">API</a>
+    <a class="opt" href="#deploy">Deploy &amp; call</a>
+    <a href="#examples">Examples</a>
+    <button class="themebtn" id="theme">◐ Theme</button>
+  </nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <h1>Build on <span class="grad">TCC</span>.<br>Rust in, WebAssembly on-chain.</h1>
+  <p>Write a contract in plain Rust with <code>tcc-sdk</code>, test it on your machine
+     under the chain's own rules, and deploy a 10–20&nbsp;KB WebAssembly module to TCC mainnet.</p>
+  <div class="chips">
+    <span class="chip">mainnet <b>91338</b></span>
+    <span class="chip">test chain <b>91339</b></span>
+    <span class="chip"><b>Rust → WASM</b></span>
+    <span class="chip">Dilithium3 · post-quantum</span>
+    <span class="chip">~10&nbsp;s blocks</span>
+    <span class="chip">fee ≈ <b>0.001 TCC</b> / tx</span>
+    <span class="chip" id="tipchip">tip <b id="tip">…</b></span>
+  </div>
+  <div class="cta">
+    <a class="btn primary" href="#start">Write your first contract →</a>
+    <a class="btn ghost" href="tools/tools.html">No-code tools</a>
+  </div>
+</div></div>
+
+<section id="start"><div class="wrap">
+  <h2>Quickstart</h2>
+  <p class="lead">The SDK is the <code>tcc-sdk</code> crate in the TCC repository. It has no
+     dependencies in the contract build.</p>
+  <div class="code"><div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="fname">Cargo.toml</span><button class="copy" data-copy="q0">Copy</button></div><pre id="q0"></pre></div>
+  <div class="code"><div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="fname">src/lib.rs</span><button class="copy" data-copy="q1">Copy</button></div><pre id="q1"></pre></div>
+  <div class="code"><div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="fname">terminal</span><button class="copy" data-copy="q2">Copy</button></div><pre id="q2"></pre></div>
+</div></section>
+
+<section id="networks"><div class="wrap">
+  <h2>Where to deploy</h2>
+  <p class="lead">Two chains, the same software and the same SDK. Build on the test chain.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h4>Test chain — 91339</h4>
+      <p><b>Start here.</b> Coins are worth nothing, so a mistake costs nothing, and it already runs
+      the rules that bound what a contract may do: 64 MiB of memory per call, storage priced by the
+      byte with values capped at 65,532, a program that does not compile refused at deploy, and
+      deploy-plus-initialise in one transaction.</p>
+      <p style="margin-top:8px">RPC <code>http://46.250.231.130:42107</code> · faucet
+      <code>http://46.250.231.130:42108/rpc</code> — 500 TCC per wallet per hour. These are plain
+      http, so they work from <code>curl</code> and the CLI today; a browser page served over https
+      cannot call them until they have a name and a certificate.</p>
+    </div>
+    <div class="card">
+      <h4>Mainnet — 91338</h4>
+      <p>Real TCC, real NFTs, real marketplaces. The chain accepts a deploy from anyone today, but
+      the limits above are <b>not live on it yet</b> — they arrive with a scheduled upgrade
+      (<span class="kbd">PLAN-untrusted-contracts.md</span>). Until then a contract here can be
+      written carelessly and take a node with it, so treat mainnet as the place you ship to <i>after</i>
+      your contract works on 91339.</p>
+      <p style="margin-top:8px"><code>https://rpc2.tcc-coin.com/rpc</code></p>
+    </div>
+  </div>
+  <h3>Test coins</h3>
+  <p class="exmeta">The faucet hands out 500 TCC an hour per wallet, and the wallet must SIGN for
+     them — so a claim proves who is asking, and an address alone is not enough. Sign the blake3 of
+     <code>"TCC-FAUCET-CLAIM-v1" ‖ chain_id(u64 LE) ‖ recipient(32) ‖ timestamp(i64 LE)</code> with
+     your Dilithium3 key (the timestamp must be within a few minutes of now), then call
+     <code>tcc_faucet([recipient, sig_hex, pubkey_hex, timestamp])</code>.</p>
+
+  <div class="callout warn" style="margin-top:18px">
+    <b>What differs between them is only what a contract may DO, never how you write it.</b> Same
+    methods, same host functions, same SDK, same deploy flow — so a contract that behaves on 91339
+    behaves on 91338. What 91339 will refuse and today's mainnet will not: an oversize value, a
+    program that is not valid WebAssembly, an instance that asks for gigabytes of memory.
+  </div>
+</div></section>
+
+<section id="model"><div class="wrap">
+  <h2>Contract model</h2>
+  <p class="lead">Six rules cover almost everything a contract author needs to know.</p>
+  <div class="grid g2">
+    <div class="card"><h4>1 · Methods</h4><p>A method is a plain <code>fn name() -> i32</code> listed in <code>export!(…)</code>. Clients call it by that name.</p></div>
+    <div class="card"><h4>2 · Arguments are bytes</h4><p><code>args()</code> returns the call's bytes exactly as sent; you define the layout. <code>Reader</code> parses it and returns <code>None</code> on short input, so bad input becomes a status code.</p></div>
+    <div class="card"><h4>3 · Return = status + payload</h4><p><code>ret(status, payload)</code>. On the wire: <code>status[4, i32 LE] ‖ payload</code>. Status <code>0</code> means success.</p></div>
+    <div class="card"><h4>4 · Storage</h4><p>Each contract has its own key-value store (raw bytes). Values up to 65,532 bytes. There is no iteration: keep your own counters and indexes.</p></div>
+    <div class="card"><h4>5 · Addresses</h4><p>An account address is <code>blake3(public key)</code>; a contract address is <code>blake3(code)</code>. <code>caller()</code> is the signer, or the calling contract inside a cross-contract call.</p></div>
+    <div class="card"><h4>6 · Determinism</h4><p>Every node re-runs your method and must get the same bytes: no clock, no randomness, no floats in state. Use <code>block_height()</code> for time.</p></div>
+  </div>
+  <div class="callout warn" style="margin-top:22px">
+    <b>A non-zero status rejects the whole transaction.</b> On TCC, a method that returns anything
+    but <code>0</code> (or calls <code>revert</code>, or panics) does not "fail with an error code":
+    the transaction is dropped. Nothing is written, no TCC moves, it is not included in a block,
+    <b>no fee is charged</b> and the sender's nonce does not advance. The status is not stored
+    anywhere on chain. To show a user <i>why</i>, run the same call first as a read-only view
+    (<code>tcc_callContract</code> with the user as caller), which returns the status. The
+    <a href="tools/tools.html">Contract Tools</a> page does exactly this before every signature.
+  </div>
+  <div class="callout">
+    <b>Inside a cross-contract call the rule differs:</b> a callee that returns a non-zero status
+    <i>keeps</i> its writes and hands the status back to the caller. Only a callee that calls
+    <code>revert</code> (or traps) has its writes discarded.
+  </div>
+</div></section>
+
+<section id="api"><div class="wrap">
+  <h2>API</h2>
+  <p class="lead"><code>use tcc_sdk::*;</code> — every function below, the host import it uses, and
+     what it does on chain 91338.</p>
+  <h3>Call context &amp; storage</h3>
+  <table class="api">
+    <tr><th>tcc-sdk</th><th>Host import</th><th>Behaviour</th></tr>
+    <tr><td><code>args() -> Vec&lt;u8&gt;</code></td><td><code>tcc_get_args</code></td><td class="d">The call's bytes, at any size.</td></tr>
+    <tr><td><code>caller() -> Address</code></td><td><code>tcc_caller</code></td><td class="d">Signer of the transaction; the calling contract inside <code>invoke</code>.</td></tr>
+    <tr><td><code>self_address() -> Address</code></td><td><code>tcc_self</code></td><td class="d">This contract's address.</td></tr>
+    <tr><td><code>block_height() -> u64</code></td><td><code>tcc_block_height</code></td><td class="d">Height of the block being applied (a view sees the tip). Constant within a transaction.</td></tr>
+    <tr><td><code>storage_get / storage_set / storage_delete / storage_has</code></td><td><code>tcc_storage_*</code></td><td class="d">This contract's key-value store. Values over 65,532 bytes abort the call.</td></tr>
+    <tr><td><code>get_u64 / set_u64 / get_u128 / set_u128 / get_address / key(…)</code></td><td>—</td><td class="d">Typed helpers, little-endian; absent reads as 0.</td></tr>
+    <tr><td><code>ret(status, payload) / ok() / revert(status)</code></td><td><code>tcc_set_return</code>, <code>tcc_revert</code></td><td class="d">Finish the method. Return frame at most 64&nbsp;KiB.</td></tr>
+    <tr><td><code>Reader / Writer</code></td><td>—</td><td class="d">Parse arguments / build payloads: <code>u8 u32 u64 u128 address lp8 bytes</code>.</td></tr>
+  </table>
+  <h3>Native TCC</h3>
+  <table class="api">
+    <tr><th>tcc-sdk</th><th>Host import</th><th>Behaviour</th></tr>
+    <tr><td><code>value() -> u128</code></td><td><code>tcc_value</code></td><td class="d">Wei sent with this call (10<sup>18</sup> wei = 1 TCC). Already in the contract's balance when the method starts. 0 inside <code>invoke</code>.</td></tr>
+    <tr><td><code>transfer_native(&amp;to, wei)</code></td><td><code>tcc_transfer_native</code></td><td class="d">Pay from <b>this contract's</b> balance. Settled after the method returns 0; paying out more than the contract holds rejects the transaction. The recipient runs no code.</td></tr>
+  </table>
+  <p class="exmeta">A contract cannot reliably read balances on v4, so a contract that holds money keeps its own ledger of what <code>value()</code> brought in and what it paid out. The <code>escrow</code> example shows the pattern.</p>
+  <h3>Crypto &amp; cross-contract calls</h3>
+  <table class="api">
+    <tr><th>tcc-sdk</th><th>Host import</th><th>Behaviour</th></tr>
+    <tr><td><code>blake3(&amp;data) -> [u8; 32]</code></td><td><code>tcc_blake3</code></td><td class="d">Hashed by the host.</td></tr>
+    <tr><td><code>verify_sig(pubkey, msg, sig) -> bool</code></td><td><code>tcc_verify_sig</code></td><td class="d">Dilithium3: 1952-byte public key (not the address), 3309-byte signature, message ≤ 64&nbsp;KiB. Costs 1,000,000 gas.</td></tr>
+    <tr><td><code>address_of(pubkey) -> Address</code></td><td><code>tcc_blake3</code></td><td class="d">The address that belongs to a public key.</td></tr>
+    <tr><td><code>invoke(&amp;contract, method, &amp;args, gas)</code></td><td><code>tcc_invoke</code></td><td class="d">Call another contract; returns its <code>Response { status, data }</code> or a <code>CallError</code>. At most 4 levels deep. Use <code>CPI_GAS</code> (10,000,000) if unsure.</td></tr>
+  </table>
+  <div class="callout warn" style="margin-top:18px">
+    <b>List every contract you invoke in the transaction's <code>accounts</code></b> — the 8th
+    parameter of <code>tcc_buildUnsignedContractCall</code>. A callee that is not listed is not
+    found or reads its storage as empty, and the call fails. The <code>badge</code> example shows it
+    both ways.
+  </div>
+</div></section>
+
+<section id="deploy"><div class="wrap">
+  <h2>Deploy &amp; call</h2>
+  <p class="lead">All RPC parameters are JSON <b>arrays</b>, in the order shown. Endpoint:
+     <code>https://rpc2.tcc-coin.com/rpc</code> (fallback <code>rpc3</code>).</p>
+  <div class="grid g3">
+    <div class="card"><div class="step"><div class="num">1</div><div><h4>Upload</h4><p><code>tcc_buildUnsignedBufferInit(owner, size, parts)</code> — the answer carries the <code>buffer</code> address: use it, don't derive it. Then one <code>tcc_buildUnsignedBufferWrite(owner, buffer, index, data_hex, gas_price, nonce)</code> per 2,048-byte part.</p></div></div></div>
+    <div class="card"><div class="step"><div class="num">2</div><div><h4>Deploy</h4><p><code>tcc_buildUnsignedContractDeploy(owner, buffer, gas_price, nonce)</code>. The contract lives at <code>blake3(wasm)</code>. The same bytes always land at the same address — to deploy a second instance, append a WASM custom section with a random salt.</p></div></div></div>
+    <div class="card"><div class="step"><div class="num">3</div><div><h4>Call</h4><p><code>tcc_buildUnsignedContractCall(from, contract, method, args_hex, value_wei, gas_limit, gas_price, accounts)</code>. Views: <code>tcc_callContract(contract, method, args_hex, caller)</code> — free, nothing kept.</p></div></div></div>
+  </div>
+  <div class="callout" style="margin-top:16px">
+    <b>Deploy and initialise in one transaction.</b> Between a deploy and its first
+    call, anyone watching the mempool can call <code>initialize</code> on your fresh
+    contract and own it. <code>tcc_buildUnsignedContractDeployInit(owner, buffer,
+    method, args_hex, value_wei, gas_limit, gas_price, accounts, nonce)</code> does
+    both at once. The chain accepts it only from the untrusted-code activation height
+    (see <span class="kbd">PLAN-untrusted-contracts.md</span>); until then, deploy and
+    initialise back to back from the same wallet and check the result.
+  </div>
+
+  <h3>From a browser</h3>
+  <p class="exmeta">Do not write this by hand: <span class="kbd">web3-app/tcc-client.js</span> is the
+     shared client — RPC with failover, the wallet derivation the TCC wallet uses, sign and submit,
+     confirmation by nonce, read-only calls, and publishing a program (which takes the buffer address
+     from the node instead of deriving it — the bug that left the tools page broken for months).
+     <code>import * as tcc from './tcc-client.js'</code>, then <code>tcc.configure({ rpcs, pkgDir })</code>.</p>
+
+  <h3>Signing</h3>
+  <p class="exmeta">Every <code>tcc_buildUnsigned…</code> answer holds <code>signing_message_hex</code>, <code>unsigned_tx_base64</code> and <code>nonce</code>. Sign the message with the wallet's Dilithium3 key and submit <code>tcc_submitSignedTransfer(unsigned_tx_base64, signature_hex, public_key_hex)</code>. A transaction has been applied when <code>tcc_getNextNonce(address)</code> passes its nonce; if it never does, the call was rejected (see the status rule) — run it as a view to learn why.</p>
+  <div class="code"><div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="fname">a view call</span><button class="copy" data-copy="d1">Copy</button></div><pre id="d1"></pre></div>
+  <p class="exmeta">Answer: <code>{"status": 0, "data": "…"}</code>. <code>data</code> is the hex of the whole return frame, so the payload starts at byte 4.</p>
+  <h3>Limits &amp; costs</h3>
+  <table class="api">
+    <tr><th>What</th><th>Value</th></tr>
+    <tr><td>Fee</td><td class="d">≈ 0.001 TCC per transaction (the governed <code>base_fee</code>), whatever the gas limit. A rejected call pays nothing.</td></tr>
+    <tr><td>Gas per transaction</td><td class="d">at most 100,000,000; views run with 100,000,000</td></tr>
+    <tr><td>Storage value</td><td class="d">65,532 bytes per key (SDK limit; any stored value can be returned whole)</td></tr>
+    <tr><td>Return frame</td><td class="d">64&nbsp;KiB</td></tr>
+    <tr><td>Cross-contract depth</td><td class="d">4</td></tr>
+    <tr><td>Upload part</td><td class="d">2,048 bytes per <code>BufferWrite</code></td></tr>
+    <tr><td>Block time</td><td class="d">~10&nbsp;s — <code>BLOCKS_PER_DAY</code> = 8,640</td></tr>
+  </table>
+</div></section>
+
+<section id="testing"><div class="wrap">
+  <h2>Testing on your machine</h2>
+  <p class="lead"><code>tcc_sdk::testing</code> is a mock host with the chain's rules: a non-zero
+     status or revert leaves no trace, payouts are settled against what the contract holds, and
+     <code>invoke</code> reaches only contracts you mock <i>and</i> list in <code>accounts</code>.</p>
+  <div class="code"><div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="fname">tests</span><button class="copy" data-copy="t1">Copy</button></div><pre id="t1"></pre></div>
+  <p class="exmeta">Run <code>cargo test</code> (the debug profile — the release profile aborts on panic).</p>
+</div></section>
+
+<section id="examples"><div class="wrap">
+  <h2>Examples</h2>
+  <p class="lead">Six complete contracts with tests, from <code>tcc-sdk/examples/</code>. All six were
+     run on the v4 VM with the exact <code>.wasm</code> they build to.</p>
+  <div class="tabs" id="tabs"></div>
+  <p class="exmeta" id="exmeta"></p>
+  <div class="code">
+    <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="fname" id="exname"></span><button class="copy" data-copy="excode">Copy</button></div>
+    <pre id="excode">loading…</pre>
+  </div>
+</div></section>
+
+<section id="unsupported"><div class="wrap">
+  <h2>Do not use</h2>
+  <p class="lead">The VM still exports these, but on chain 91338 they are not safe. <code>tcc-sdk</code>
+     does not wrap them; a hand-written import must not use them either.</p>
+  <ul class="tight">
+    <li><code>tcc_account_balance</code>, <code>tcc_account_exists</code>, <code>tcc_account_data_*</code>,
+        <code>tcc_block_hash</code>, <code>tcc_validator_count</code>, <code>tcc_validator_at</code> — they read
+        storage left over from the pre-v4 chain. A node that synced from a snapshot does not have it,
+        so two nodes can answer differently, and a contract depending on the answer can split the chain.</li>
+    <li><code>tcc_log</code> — accepted, but its output is discarded (not in node logs, not returned by
+        views). Return data instead.</li>
+    <li><code>tcc_invoke_as</code> — token-bound-account calls; not exercised on v4.</li>
+  </ul>
+</div></section>
+
+<footer><div class="wrap">
+  TCC Contract SDK · chain 91338 · source: <span class="kbd">tcc-sdk/</span> ·
+  <a href="tools/tools.html">Contract Tools</a> ·
+  <a href="https://testscan.tcc-coin.com/" target="_blank" rel="noopener">Explorer</a>
+</div></footer>
+
+<script type="text/plain" id="src-q0">[package]
+name = "my-contract"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+tcc-sdk = { path = "../tcc-sdk" }   # the tcc-sdk directory of the TCC repository
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true</script>
+
+<script type="text/plain" id="src-q1">use tcc_sdk::*;
+
+const COUNT: &[u8] = b"count";
+
+/// increment() -> new value (u64 LE)
+fn increment() -> i32 {
+    let n = get_u64(COUNT) + 1;
+    set_u64(COUNT, n);
+    ret(0, &n.to_le_bytes())
+}
+
+/// get() -> value (u64 LE)
+fn get() -> i32 {
+    ret(0, &get_u64(COUNT).to_le_bytes())
+}
+
+export!(increment, get);</script>
+
+<script type="text/plain" id="src-q2">rustup target add wasm32-unknown-unknown        # once
+cargo test                                        # run your tests on the mock host
+cargo build --release --target wasm32-unknown-unknown
+# -> target/wasm32-unknown-unknown/release/my_contract.wasm</script>
+
+<script type="text/plain" id="src-d1">curl -s https://rpc2.tcc-coin.com/rpc -H 'content-type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tcc_callContract",
+       "params":["<contract address>", "get", "", "<caller address, optional>"]}'</script>
+
+<script type="text/plain" id="src-t1">#[cfg(test)]
+mod tests {
+    use super::*;
+    use tcc_sdk::testing::*;
+
+    #[test]
+    fn counts() {
+        reset();
+        let out = Call::new(ALICE).run(increment);
+        assert!(out.accepted);
+        assert_eq!(Call::new(BOB).view().run(get).data, 1u64.to_le_bytes());
+    }
+
+    // Call::new(who).value(wei)        TCC sent with the call
+    // Call::new(who).accounts(&[addr])  contracts the call may invoke
+    // mock_contract(addr, |caller, method, args| (status, data))
+    // out.accepted / out.status / out.data / out.payouts / out.why
+}</script>
+
+<script>
+(function(){
+  var $=function(s,e){return (e||document).querySelector(s)};
+  ['q0','q1','q2','d1','t1'].forEach(function(id){ $('#'+id).textContent=$('#src-'+id).textContent.trim(); });
+
+  // Examples are read from sdk/examples/, a copy of tcc-sdk/examples made by
+  // tcc-sdk/sync-docs.sh — one source, so the page cannot drift from the code.
+  var EX=[
+    ['counter','storage, arguments, return values, refusing bad input'],
+    ['guestbook','caller() as identity, the growing-list pattern'],
+    ['name_registry','owner-only writes, a mapping, deleting state'],
+    ['poll','block-height deadlines, one vote per address (the Contract Tools poll)'],
+    ['escrow','receiving TCC with value(), paying out with transfer_native(), a ledger'],
+    ['badge','calling another contract with invoke() — an ERC-721 owner_of check']];
+  var cache={};
+  function showEx(name){
+    var e=EX.filter(function(x){return x[0]===name})[0];
+    $('#exname').textContent=name+'.rs'; $('#exmeta').textContent='Shows: '+e[1];
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.ex===name); });
+    if(cache[name]){ $('#excode').textContent=cache[name]; return; }
+    $('#excode').textContent='loading…';
+    fetch('sdk/examples/'+name+'.rs').then(function(r){ if(!r.ok) throw 0; return r.text(); })
+      .then(function(t){ cache[name]=t; if($('#exname').textContent===name+'.rs') $('#excode').textContent=t; })
+      .catch(function(){ $('#excode').textContent='Could not load sdk/examples/'+name+'.rs — the source is in tcc-sdk/examples/ in the repository.'; });
+  }
+  $('#tabs').innerHTML=EX.map(function(e){ return '<button class="tab" data-ex="'+e[0]+'">'+e[0]+'.rs</button>'; }).join('');
+  document.querySelectorAll('.tab').forEach(function(t){ t.onclick=function(){ showEx(t.dataset.ex); }; });
+  showEx('counter');
+
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.onclick=function(){
+      var t=$('#'+b.dataset.copy).textContent;
+      navigator.clipboard.writeText(t).then(function(){ var o=b.textContent; b.textContent='Copied ✓'; setTimeout(function(){b.textContent=o;},1200); });
+    };
+  });
+
+  var root=document.documentElement;
+  try{ var s=localStorage.getItem('tcc-sdk-theme'); if(s) root.setAttribute('data-theme',s); }catch(e){}
+  $('#theme').onclick=function(){
+    var next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    root.setAttribute('data-theme',next);
+    try{ localStorage.setItem('tcc-sdk-theme',next); }catch(e){}
+  };
+
+  fetch('https://rpc2.tcc-coin.com/rpc',{method:'POST',headers:{'content-type':'application/json'},
+    body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tcc_getFinalityStatus',params:[]})})
+    .then(function(r){return r.json()}).then(function(j){
+      var h=j&&j.result&&j.result.tip_height; if(h){ $('#tip').textContent='#'+h.toLocaleString(); }
+      else { $('#tipchip').style.display='none'; }
+    }).catch(function(){ $('#tipchip').style.display='none'; });
+})();
+</script>
+</body>
+</html>
