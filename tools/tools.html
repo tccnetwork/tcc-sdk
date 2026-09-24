@@ -62,6 +62,9 @@
   .msg.err{background:color-mix(in oklab,var(--err) 12%,transparent);border:1px solid var(--err);color:var(--fg)}
   .callout{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--muted);margin-top:16px}
   .themebtn{cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--fg);border-radius:8px;padding:6px 10px;font-size:13px}
+  /* the form rule above sets select{width:100%}, which would stretch the network
+     picker across the whole header bar */
+  .top nav select{width:auto}
   dialog{border:1px solid var(--border);border-radius:14px;background:var(--panel);color:var(--fg);max-width:420px;width:92%;padding:22px}
   dialog::backdrop{background:rgba(4,8,16,.6)}
   .help-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--chip);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;margin-left:7px;vertical-align:middle;user-select:none;line-height:1}
@@ -87,15 +90,21 @@
   <nav>
     <a href="../sdk.html">SDK docs</a>
     <a href="https://testscan.tcc-coin.com/" target="_blank" rel="noopener">Explorer</a>
+    <select id="network" class="themebtn" aria-label="Network" title="Which chain this page talks to">
+      <option value="test">Test chain 91339 — free</option>
+      <option value="main">Mainnet 91338 — real TCC</option>
+    </select>
     <button class="themebtn" id="theme">◐</button>
   </nav>
 </div></header>
 
 <div class="hero"><div class="wrap">
   <h1>Ship a smart contract without writing code</h1>
-  <p>Fill in a few fields and put a real contract on TCC mainnet (chain <span id="chainId">91338</span>).
+  <p>Fill in a few fields and put a contract on <span id="netName">the TCC test chain</span>
+     (chain <span id="chainId">91339</span>).
      No Rust, no CLI — audited template programs, your wallet signs in this page.
      Every action is checked against the chain before you sign.</p>
+  <div id="netbanner" class="msg" style="display:none"></div>
   <div class="wallet">
     <button class="btn primary" id="connect">Connect wallet</button>
     <span class="waddr" id="waddr">not connected</span>
@@ -123,7 +132,25 @@ import * as N from '../tcc-client.js';
 import { mnemonicToEntropy, validateMnemonic } from '../public/vendor/bip39.js';
 import { wordlist } from '../public/vendor/bip39-wordlist-en.js';
 
-const RPCS = ['https://rpc2.tcc-coin.com/rpc', 'https://rpc3.tcc-coin.com/rpc'];
+// Two chains, same software. The TEST chain is the default on purpose: a stranger who
+// lands here and presses Deploy should spend nothing. Mainnet is one deliberate click
+// away and says so in red while it is selected.
+const NETWORKS = {
+  test: {
+    id: 91339, label: 'the TCC test chain',
+    rpcs: ['https://rpc-test.tcc-coin.com/rpc'],
+    faucet: 'https://faucet-test.tcc-coin.com/rpc'
+  },
+  main: {
+    id: 91338, label: 'TCC mainnet',
+    rpcs: ['https://rpc2.tcc-coin.com/rpc', 'https://rpc3.tcc-coin.com/rpc'],
+    faucet: null
+  }
+};
+let NETKEY = 'test';
+try { const s = localStorage.getItem('tcc-tools-network'); if (NETWORKS[s]) NETKEY = s; } catch (e) { }
+const NET = NETWORKS[NETKEY];
+const RPCS = NET.rpcs;
 const PKG = '../public/pkg/';
 N.configure({ rpcs: RPCS, pkgDir: PKG });
 const WASM_DIR = '../public/wasm/';
@@ -559,8 +586,31 @@ const root = document.documentElement;
 try { const s = localStorage.getItem('tcc-tools-theme'); if (s) root.setAttribute('data-theme', s); } catch (e) { }
 $('#theme').onclick = () => { const n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; root.setAttribute('data-theme', n); try { localStorage.setItem('tcc-tools-theme', n); } catch (e) { } };
 
+// ── which chain this page is pointed at ────────────────────────────────────────
+$('#netName').textContent = NET.label;
+$('#chainId').textContent = String(NET.id);
+$('#network').value = NETKEY;
+if (NETKEY === 'main') {
+  const b = $('#netbanner');
+  b.className = 'msg err show';
+  b.textContent = 'Mainnet: every deploy and every call spends real TCC (about 0.001 TCC per transaction) and the contract stays on chain for good. Switch to the test chain above to try things for free.';
+} else if (NET.faucet) {
+  const b = $('#netbanner');
+  b.className = 'msg show';
+  b.textContent = `Test chain: coins here are worth nothing. Get some from the faucet at ${NET.faucet} (500 TCC per wallet per hour), then deploy as often as you like.`;
+}
+// A reload is the honest way to switch: wallet, nonces and every cached answer belong
+// to the chain they came from, and carrying them across is how a page shows one chain's
+// balance while signing for another.
+$('#network').onchange = (e) => {
+  const k = e.target.value;
+  if (!NETWORKS[k] || k === NETKEY) return;
+  try { localStorage.setItem('tcc-tools-network', k); } catch (err) { }
+  location.reload();
+};
+
 renderNav(); renderPanel();
-rpc('tcc_getChainTip').then(t => { if (t && t.chain_id && t.chain_id !== C.CHAIN_ID) setMsg(`⚠ This RPC serves chain ${t.chain_id}, but the page is built for ${C.CHAIN_ID}.`, 'err'); }).catch(() => { });
+rpc('tcc_getChainTip').then(t => { if (t && t.chain_id && t.chain_id !== NET.id) setMsg(`⚠ This RPC serves chain ${t.chain_id}, but this page is pointed at ${NET.id}.`, 'err'); }).catch(() => { });
 </script>
 </body>
 </html>
