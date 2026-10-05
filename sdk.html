@@ -347,12 +347,16 @@
   <ul class="tight">
     <li><code>tcc_account_balance</code>, <code>tcc_account_exists</code>, <code>tcc_account_data_*</code>,
         <code>tcc_block_hash</code>, <code>tcc_validator_count</code>, <code>tcc_validator_at</code> — they read
-        storage left over from the pre-v4 chain. A node that synced from a snapshot does not have it,
-        so two nodes can answer differently, and a contract depending on the answer can split the chain.</li>
-    <li><code>tcc_log</code> — accepted, but its output is discarded (not in node logs, not returned by
-        views). Return data instead.</li>
+        storage left over from the pre-v4 chain, which a node that synced from a snapshot does not have.
+        Since block 515,000 every node answers <code>-1</code> from all of them, so they can no longer split
+        the chain — but they tell you nothing either.</li>
     <li><code>tcc_invoke_as</code> — token-bound-account calls; not exercised on v4.</li>
   </ul>
+  <p><b>Logging.</b> <code>tcc_log</code> lines come back from a read-only call:
+    <code>tcc_callContractDebug</code> takes the same params as <code>tcc_callContract</code> and returns
+    <code>{ status, data, logs: [...] }</code>. At most 256 lines per call, each cut (not dropped) at 4 KiB.
+    A transaction that lands in a block keeps no logs anywhere, so debug with the read-only call first,
+    then send.</p>
 </div></section>
 
 <footer><div class="wrap">
